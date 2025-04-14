@@ -6,7 +6,6 @@
 #include <chrono>
 #include <thread>
 #include <bits/stdc++.h>
-#include <ranges> 
 
 using namespace std;
 
@@ -107,7 +106,10 @@ public:
 };
 struct CompareByBurst{
     bool operator()(const Process &a, const Process &b){
-            return a.getBurstTime() > b.getBurstTime();
+        if(a.getBurstTime()==b.getBurstTime())
+            return a.getArrivalTime() >b.getArrivalTime();
+
+        return a.getBurstTime() > b.getBurstTime();
 
     }
 };
@@ -126,10 +128,13 @@ int main()
 
 
     for(int i=1; i<=n; i++){
-            int art,bt;
+            int art=0,bt;
+            cout<<"Arrival time:";
+            cin>>art;
             cout<<"Burst time:";
             cin>>bt;
-            Process  p(i,0,bt);
+            
+            Process  p(i,art,bt);
             Processes.push(p);
             cout<<p.getID()<<" "<<p.getArrivalTime()<<" "<<p.getBurstTime()<<endl;
 
@@ -153,20 +158,26 @@ int main()
 
 
     // Using regular for loop with decreasing index
+    
+//    while(stop_flag!=1){
+    int counter=0;
     while(!Processes.empty()){
 
         auto start = chrono::high_resolution_clock::now();
         
         // get next process in queue
         Process currentProcess=Processes.top();
-      
-
-
+    
         
 
+
+        cout<< "\ncounter : " << counter<<endl;
+
         // update burst time
-        if(currentProcess.getBurstTime()){
+        if(currentProcess.getBurstTime()&& (currentProcess.getArrivalTime()<=counter)){
+            
             this_thread::sleep_for(chrono::milliseconds(1000));
+          
             currentProcess.setBurstTime(currentProcess.getBurstTime()-1);
 
             // print current element       
@@ -177,11 +188,18 @@ int main()
             Processes.push(currentProcess);
 
         }
+        else if(currentProcess.getArrivalTime()>counter){
+            cout<<"__ | ";
+            this_thread::sleep_for(chrono::milliseconds(1000));
+        }
         else
             Processes.pop();
 
+        // after every second the counter adds 1
+        counter++;
 
 }
+// }
 
 
 
