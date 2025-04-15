@@ -26,7 +26,9 @@ private:
 
 
 public:
-
+//Default Constructor
+    Process(){
+    }
 
 // Constructor for FCFS, RR and SJF scheduling
     Process(int id, int arrival_time, int burst_time){
@@ -42,8 +44,7 @@ public:
 
 
 // Constructor for priority scheduling
-    Process(){
-    }
+
     Process(int id,int arrival_time,int burst_time,int priority){
         this->id=id;
         this->arrival_time=arrival_time;
@@ -114,13 +115,25 @@ struct CompareByBurst{
     }
 };
 
+struct CompareByArrival{
+        bool operator()(const Process &a, const Process &b){
+            if(a.getArrivalTime()==b.getArrivalTime())
+                return a.getBurstTime() >b.getBurstTime();
+    
+            return a.getArrivalTime() > b.getArrivalTime();
+    
+        }
+};
+
 
 
 int main()
 {
 
-    //  min heap initialization
-    priority_queue<Process, std::vector<Process>, CompareByBurst> Processes;
+    //  min heaps initialization, one sorted by arrival time, and one sorted by burst time.
+    priority_queue<Process, std::vector<Process>, CompareByArrival> ProcessesByArrival;
+    priority_queue<Process, std::vector<Process>, CompareByBurst> ProcessesByBurst;
+    vector<string> gantt_chart;
 
     cout<<"Number of Processes:"<<flush;
     int n;
@@ -135,76 +148,73 @@ int main()
             cin>>bt;
             
             Process  p(i,art,bt);
-            Processes.push(p);
+            ProcessesByArrival.push(p);
             cout<<p.getID()<<" "<<p.getArrivalTime()<<" "<<p.getBurstTime()<<endl;
 
 
     }
 
-
-
-    //cout << "Sorted by Burst Time in min heap (ascendingly):\n";
- /*
-    for (int i=0; i<n ; i++){
-        Process process=Processes.top();
-        cout<<"BT:"<<process.getBurstTime()<<endl;
-        cout<<"ID:"<<process.getID()<<endl;
-
-        Processes.pop();
-
-    }*/
-
-
-
-
-    // Using regular for loop with decreasing index
-    
-//    while(stop_flag!=1){
     int counter=0;
-    while(!Processes.empty()){
+    while(!ProcessesByArrival.empty()||!ProcessesByBurst.empty()){
+        Process newProcess;
 
+                   
+        while(!ProcessesByArrival.empty()){
+            // top of arrived processes
+            newProcess=ProcessesByArrival.top();
+            if(newProcess.getArrivalTime()<=counter){
+                    // push arrived process
+                ProcessesByBurst.push(newProcess);
+                // update buffer 
+                ProcessesByArrival.pop();
+            }else
+                break;
+        }
+        
         auto start = chrono::high_resolution_clock::now();
         
-        // get next process in queue
-        Process currentProcess=Processes.top();
     
-        
-
-
         cout<< "\ncounter : " << counter<<endl;
+        
+        Process currentProcess;
+        if(!ProcessesByBurst.empty())
+        // current process from burst time
+            currentProcess=ProcessesByBurst.top();
+        else
+            currentProcess=Process(0,0,0);
+        
+        this_thread::sleep_for(chrono::milliseconds(1000));
 
         // update burst time
-        if(currentProcess.getBurstTime()&& (currentProcess.getArrivalTime()<=counter)){
+        if(currentProcess.getBurstTime()){
             
-            this_thread::sleep_for(chrono::milliseconds(1000));
+
           
             currentProcess.setBurstTime(currentProcess.getBurstTime()-1);
 
             // print current element       
-            cout<<"P"<<currentProcess.getID()<< " | " ;
+            gantt_chart.push_back("P"+to_string(currentProcess.getID())+ " | " );
 
             // update top element
-            Processes.pop();
-            Processes.push(currentProcess);
+            ProcessesByBurst.pop();
+            ProcessesByBurst.push(currentProcess);
 
         }
-        else if(currentProcess.getArrivalTime()>counter){
-            cout<<"__ | ";
-            this_thread::sleep_for(chrono::milliseconds(1000));
-        }
+        else if(!ProcessesByBurst.empty())
+            ProcessesByBurst.pop();
         else
-            Processes.pop();
+            gantt_chart.push_back("__ | ");
 
         // after every second the counter adds 1
         counter++;
 
+        
+    // Accessing and printing elements
+    for (const string& str : gantt_chart) 
+        cout << str ;
+    
+    cout<<"\n";
+    
+
 }
-// }
-
-
-
-
-
-
-
 }

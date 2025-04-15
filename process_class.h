@@ -78,3 +78,5 @@ struct Output {
 bool sortByArrivalTime(const Process &a, const Process &b);
 
 bool sortByPriority(const Process &a, const Process &b);
+
+void printOutput(const Output& output, const string& title);
