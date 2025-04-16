@@ -6,6 +6,7 @@
 #include <chrono>
 #include <thread>
 #include <queue>
+#include <string>
 
 #include "process_class.h"
 
@@ -67,11 +68,17 @@ int main()
 
     vector<string> gantt_chart;
 
+
+    // number of processes in initial
     cout<<"Number of Processes:"<<flush;
     int n;
     cin>>n;
-bool preemptive=1;
 
+    // default is preemptive, no process executing
+    bool preemptive=1, processExecuting=0; 
+
+
+    // input receival from terminal
     for(int i=1; i<=n; i++){
             int art=0,bt;
             cout<<"Arrival time:";
@@ -82,31 +89,21 @@ bool preemptive=1;
             Process  p(i,art,bt);
             ProcessesByArrival.push(p);
             cout<<p.getID()<<" "<<p.getArrivalTime()<<" "<<p.getRemainingTime()<<endl;
-
-
     }
 
+    // initialization
     int counter=0;
-    while(!ProcessesByArrival.empty()||!ProcessesByRemainingTime.empty()){
-
-
-            if(preemptive==0){
-
-            }
-
-
-
-
-
-
-        Process newProcess;
-
-
+    Process newProcess, currentProcess;
+    
+    // the main while loop should be changed to take flag stop or stth from GUI
+    while(!ProcessesByArrival.empty()||!ProcessesByRemainingTime.empty()){        
         while(!ProcessesByArrival.empty()){
             // top of arrived processes
             newProcess=ProcessesByArrival.top();
-            if(newProcess.getArrivalTime()<=counter){
-                    // push arrived process
+
+            // update only if preemptive or no process is executing
+            if(newProcess.getArrivalTime()<=counter && (!processExecuting || preemptive)){
+                // push arrived process
                 ProcessesByRemainingTime.push(newProcess);
                 // update buffer
                 ProcessesByArrival.pop();
@@ -120,29 +117,33 @@ bool preemptive=1;
         cout<< "\ncounter : " << counter<<endl;
 
         Process currentProcess;
-        if(!ProcessesByRemainingTime.empty())
-        // current process from burst time
-            currentProcess=ProcessesByRemainingTime.top();
+        if (!ProcessesByRemainingTime.empty()) {
+            // current process from burst time
+            currentProcess = ProcessesByRemainingTime.top();
+            processExecuting = 1;
+        }
         else
             currentProcess=Process(0,0,0);
 
         this_thread::sleep_for(chrono::milliseconds(1000));
 
-        // update burst time
+        
         if(currentProcess.getRemainingTime()){
-
-
-
+            // update burst time
             currentProcess.updateRemainingTime(1);
 
             // print current element
             gantt_chart.push_back("P"+to_string(currentProcess.getID())+ " | " );
 
-            // update top element
+            // pop top element
             ProcessesByRemainingTime.pop();
-            if(currentProcess.getRemainingTime())
-            ProcessesByRemainingTime.push(currentProcess);
 
+            // push top element if process not ended
+            if (currentProcess.getRemainingTime()) 
+                ProcessesByRemainingTime.push(currentProcess);
+            else
+                // process remainingTime=0, process ended
+                processExecuting = 0;
            }
         else
             gantt_chart.push_back("__ | ");
