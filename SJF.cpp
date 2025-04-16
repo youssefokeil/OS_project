@@ -57,15 +57,22 @@ struct CompareByArrival{
         }
 };
 
+struct CompareByPriority {
+    bool operator()(const Process& a, const Process& b) {
+        return a.get_priority() > b.get_priority();
+
+    }
+};
+
 
 int main()
 {
 
     //  min heaps initialization, one sorted by arrival time, and one sorted by burst time.
     priority_queue<Process, std::vector<Process>, CompareByArrival> ProcessesByArrival;
-    priority_queue<Process, std::vector<Process>, CompareByRemainingTime> ProcessesByRemainingTime; //preemptive
-    priority_queue<Process, std::vector<Process>, CompareByBurstTime> ProcessesByBurstTime; //for nonpreemptive
-
+    priority_queue<Process, std::vector<Process>, CompareByPriority> MainQueue; 
+    
+ 
     vector<string> gantt_chart;
 
 
@@ -80,13 +87,15 @@ int main()
 
     // input receival from terminal
     for(int i=1; i<=n; i++){
-            int art=0,bt;
-            cout<<"Arrival time:";
+        int art = 0, bt, priority;
+            cout<<"Arrival time: ";
             cin>>art;
-            cout<<"Burst time:";
+            cout<<"Burst time: ";
             cin>>bt;
+            cout << "Priority: ";
+            cin >> priority;
 
-            Process  p(i,art,bt);
+            Process  p(i, art, bt, priority);
             ProcessesByArrival.push(p);
             cout<<p.getID()<<" "<<p.getArrivalTime()<<" "<<p.getRemainingTime()<<endl;
     }
@@ -96,7 +105,7 @@ int main()
     Process newProcess, currentProcess;
     
     // the main while loop should be changed to take flag stop or stth from GUI
-    while(!ProcessesByArrival.empty()||!ProcessesByRemainingTime.empty()){        
+    while(!ProcessesByArrival.empty()||!MainQueue.empty()){        
         while(!ProcessesByArrival.empty()){
             // top of arrived processes
             newProcess=ProcessesByArrival.top();
@@ -104,7 +113,7 @@ int main()
             // update only if preemptive or no process is executing
             if(newProcess.getArrivalTime()<=counter && (!processExecuting || preemptive)){
                 // push arrived process
-                ProcessesByRemainingTime.push(newProcess);
+                MainQueue.push(newProcess);
                 // update buffer
                 ProcessesByArrival.pop();
             }else
@@ -117,9 +126,9 @@ int main()
         cout<< "\ncounter : " << counter<<endl;
 
         Process currentProcess;
-        if (!ProcessesByRemainingTime.empty()) {
+        if (!MainQueue.empty()) {
             // current process from burst time
-            currentProcess = ProcessesByRemainingTime.top();
+            currentProcess = MainQueue.top();
             processExecuting = 1;
         }
         else
@@ -136,11 +145,11 @@ int main()
             gantt_chart.push_back("P"+to_string(currentProcess.getID())+ " | " );
 
             // pop top element
-            ProcessesByRemainingTime.pop();
+            MainQueue.pop();
 
             // push top element if process not ended
             if (currentProcess.getRemainingTime()) 
-                ProcessesByRemainingTime.push(currentProcess);
+                MainQueue.push(currentProcess);
             else
                 // process remainingTime=0, process ended
                 processExecuting = 0;
