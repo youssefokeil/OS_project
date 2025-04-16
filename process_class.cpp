@@ -1,97 +1,98 @@
-#include <bits/stdc++.h>
+#include "process_class.h"
 
-using namespace std;
+// Default Constructor
+Process::Process() {
+    id = 0;
+    arrival_time = 0;
+    burst_time = 0;
+    waiting_time = 0;
+    turnaround_time = 0;
+    finish_time = 0;
+    start_time = -1;
+    remaining_time = 0;
+    priority = 0;
+}
 
-class Process{
+// Constructor for FCFS, RR, and SJF scheduling
+Process::Process(int id, int arrival_time, int burst_time)
+    : id(id), arrival_time(arrival_time), burst_time(burst_time), remaining_time(burst_time) {
+    waiting_time = 0;
+    turnaround_time = 0;
+    finish_time = 0;
+    start_time = -1;
+}
 
-private:
+// Constructor for Priority Scheduling
+Process::Process(int id, int arrival_time, int burst_time, int priority)
+    : Process(id, arrival_time, burst_time) {
+    this->priority = priority;
+}
 
-    int id; 
-    int arrival_time;
-    int burst_time;
-    int waiting_time;
-    int turnaround_time;
-    int start_time;
-    int finish_time;
-    int remaining_time; // for scheduling algorithms with preemption (SJF_RR)
-    int priority; // for priority scheduling
-    
-    
-    
-public:    
-  
+// Setters
+void Process::setFinishTime(int finish_time) {
+    this->finish_time = finish_time;
+}
 
-// Constructor for FCFS, RR and SJF scheduling
-    Process(int id, int arrival_time, int burst_time){
-        this->id = id;
-        this->arrival_time = arrival_time;
-        this->burst_time = burst_time;
-        this->waiting_time = 0;
-        this->turnaround_time = 0;
-        this->finish_time = 0;
-        this->start_time = -1;
-        this->remaining_time = burst_time;
-    }
+void Process::setBurstTime(int burst_time) {
+    this->burst_time = burst_time;
+}
 
+void Process::setStartTime(int start) {
+    start_time = start;
+}
 
-// Constructor for priority scheduling
-    Process(int id,int arrival_time,int burst_time,int priority){
-        this->id=id;
-        this->arrival_time=arrival_time;
-        this->burst_time=burst_time;
-        this->waiting_time=0;   
-        this->turnaround_time=0;
-        this->finish_time=0;
-        this->priority=priority;
-        this->start_time = -1;
-        this->remaining_time = burst_time;
+void Process::setRemainingTime(int time) {
+    remaining_time = time;
+}
 
-    }
+void Process::set_priority(int priority) {
+    this->priority = priority;
+}
 
-    /* Turn_around=finish_time-arrival_time
-       waiting_time=turnaround_time-burst_time
-    */
+// Calculations
+int Process::calc_waiting_time() {
+    waiting_time = turnaround_time - burst_time;
+    return waiting_time;
+}
 
-    void setFinishTime(int finish_time){
-        this->finish_time=finish_time;
-    
-    }
-    void setBurstTime(int burst_time){
-        this->burst_time=burst_time;
-    }
-    
-    void setStartTime(int start) { 
-        start_time = start; 
-    }
+int Process::calc_turnaround_time() {
+    turnaround_time = finish_time - arrival_time;
+    return turnaround_time;
+}
 
-    int calc_waiting_time(){
-        waiting_time=turnaround_time-burst_time;
-        return waiting_time;
-    }
-    int calc_turnaround_time(){
-        turnaround_time=finish_time-arrival_time;
-        return turnaround_time;
-    }
+void Process::updateRemainingTime(int timeUsed) {
+    remaining_time -= timeUsed;
+}
 
-    void updateRemainingTime(int timeUsed) { 
-        remaining_time -= timeUsed; 
-    }
+// Getters
+int Process::get_priority() const {
+    return priority;
+}
 
-    // Priority scheduling
-    void set_priority(int priority){
-        this->priority=priority;
-    }
-    int get_priority() const{return priority;}
+int Process::getArrivalTime() const {
+    return arrival_time;
+}
 
-    // getters
-    int getArrivalTime() const { return arrival_time; }
-    int getBurstTime() const { return burst_time; }
-    int getFinishTime() const { return finish_time; }
-    int getWaitingTime() const { return waiting_time; }
-    int getTurnaroundTime() const { return turnaround_time; }
-    int getID() const { return id; }
-    int getRemainingTime() const { return remaining_time; }
+int Process::getBurstTime() const {
+    return burst_time;
+}
 
+int Process::getFinishTime() const {
+    return finish_time;
+}
 
+int Process::getWaitingTime() const {
+    return waiting_time;
+}
 
-};
+int Process::getTurnaroundTime() const {
+    return turnaround_time;
+}
+
+int Process::getID() const {
+    return id;
+}
+
+int Process::getRemainingTime() const {
+    return remaining_time;
+}
