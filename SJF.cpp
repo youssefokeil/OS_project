@@ -9,68 +9,17 @@
 #include <string>
 
 #include "process_class.h"
-
+#include "CompareStructs.h"
 
 using namespace std;
-
-struct CompareByBurstTime{
-    bool operator()(const Process &a, const Process &b){
-        if(a.getBurstTime()==b.getBurstTime())
-            {
-           if(a.getArrivalTime()==b.getArrivalTime())
-                        return a.getID() >b.getID() ;
-
-            return a.getArrivalTime() >b.getArrivalTime();
-
-               }
-        return a.getBurstTime() > b.getBurstTime();
-
-    }
-};
-struct CompareByRemainingTime{
-    bool operator()(const Process &a, const Process &b){
-        if(a.getRemainingTime()==b.getRemainingTime())
-            {
-           if(a.getArrivalTime()==b.getArrivalTime())
-                        return a.getID() >b.getID() ;
-
-            return a.getArrivalTime() >b.getArrivalTime();
-
-               }
-        return a.getRemainingTime() > b.getRemainingTime();
-
-    }
-};
-
-struct CompareByArrival{
-        bool operator()(const Process &a, const Process &b){
-            if(a.getArrivalTime()==b.getArrivalTime())
-               {
-           if(a.getRemainingTime()==b.getRemainingTime())
-                        return a.getID() >b.getID() ;
-
-                return a.getRemainingTime() >b.getRemainingTime();
-
-               }
-            return a.getArrivalTime() > b.getArrivalTime();
-
-        }
-};
-
-struct CompareByPriority {
-    bool operator()(const Process& a, const Process& b) {
-        return a.get_priority() > b.get_priority();
-
-    }
-};
 
 
 int main()
 {
 
     //  min heaps initialization, one sorted by arrival time, and one sorted by burst time.
-    priority_queue<Process, std::vector<Process>, CompareByArrival> ProcessesByArrival;
-    priority_queue<Process, std::vector<Process>, CompareByPriority> MainQueue; 
+    priority_queue<Process, std::vector<Process>, CompareByArrival> ArrivalBuffer;
+    priority_queue<Process, std::vector<Process>, CompareByArrival> MainQueue; 
     
  
     vector<string> gantt_chart;
@@ -82,7 +31,7 @@ int main()
     cin>>n;
 
     // default is preemptive, no process executing
-    bool preemptive=1, processExecuting=0; 
+    bool preemptive=0, processExecuting=0; 
 
 
     // input receival from terminal
@@ -96,7 +45,7 @@ int main()
             cin >> priority;
 
             Process  p(i, art, bt, priority);
-            ProcessesByArrival.push(p);
+            ArrivalBuffer.push(p);
             cout<<p.getID()<<" "<<p.getArrivalTime()<<" "<<p.getRemainingTime()<<endl;
     }
 
@@ -105,17 +54,17 @@ int main()
     Process newProcess, currentProcess;
     
     // the main while loop should be changed to take flag stop or stth from GUI
-    while(!ProcessesByArrival.empty()||!MainQueue.empty()){        
-        while(!ProcessesByArrival.empty()){
+    while (!ArrivalBuffer.empty() || !MainQueue.empty()) {
+        while(!ArrivalBuffer.empty()){
             // top of arrived processes
-            newProcess=ProcessesByArrival.top();
+            newProcess = ArrivalBuffer.top();
 
             // update only if preemptive or no process is executing
             if(newProcess.getArrivalTime()<=counter && (!processExecuting || preemptive)){
                 // push arrived process
                 MainQueue.push(newProcess);
                 // update buffer
-                ProcessesByArrival.pop();
+                ArrivalBuffer.pop();
             }else
                 break;
         }
@@ -125,7 +74,6 @@ int main()
 
         cout<< "\ncounter : " << counter<<endl;
 
-        Process currentProcess;
         if (!MainQueue.empty()) {
             // current process from burst time
             currentProcess = MainQueue.top();
