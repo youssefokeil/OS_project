@@ -14,7 +14,7 @@
 
 using namespace std;
 
-// ArrivalBuffer should be checked every second, doesn't make sense 
+// Set Scheduler Type and whether it is preemptive
 Scheduler::Scheduler(string scheduler_type, bool preemptive) {
     this->scheduler_type = scheduler_type;
     this->preemptive = preemptive;
@@ -22,8 +22,10 @@ Scheduler::Scheduler(string scheduler_type, bool preemptive) {
 
     // re-declaration of MainQueue depending on Scheduler Type
     if (scheduler_type == "SJF")
+    {
         // main priority queue is compared by remaining time
         priority_queue<Process, std::vector<Process>, CompareByRemainingTime> MainQueue;
+    }
     else if (scheduler_type == "FCFS")
         // main priority queue is compared by Arrival time
         priority_queue<Process, std::vector<Process>, CompareByArrivalTime> MainQueue;

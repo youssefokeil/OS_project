@@ -1,3 +1,5 @@
+#pragma once
+
 #include <mutex>
 #include <thread>
 
@@ -9,7 +11,6 @@
 #include <chrono>
 #include <thread>
 #include <queue>
-
 using namespace std;
 
 class Process{
@@ -40,10 +41,6 @@ Process(int id, int arrival_time, int burst_time);
 
 // Constructor for priority scheduling
 Process(int id,int arrival_time,int burst_time,int priority);
-
-/* Turn_around=finish_time-arrival_time
-   waiting_time=turnaround_time-burst_time
-*/
 
 // setters
 void setFinishTime(int finish_time);

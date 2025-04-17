@@ -5,8 +5,9 @@
 #include <algorithm>
 #include <chrono>
 #include <thread>
-#include <bits/stdc++.h>
 
+#include <queue>
+#include "process_class.h"
 
 using namespace std;
 

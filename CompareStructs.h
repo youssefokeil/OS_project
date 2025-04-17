@@ -18,20 +18,17 @@ struct CompareByBurstTime {
 };
 struct CompareByRemainingTime {
     bool operator()(const Process& a, const Process& b) {
-        if (a.getRemainingTime() == b.getRemainingTime())
-        {
-            if (a.getArrivalTime() == b.getArrivalTime())
-                return a.getID() > b.getID();
-
+        if (a.getRemainingTime() != b.getRemainingTime())
+            return a.getRemainingTime() > b.getRemainingTime();
+        if (a.getArrivalTime() != b.getArrivalTime())
             return a.getArrivalTime() > b.getArrivalTime();
+        return a.getID() > b.getID();        
 
-        }
-        return a.getRemainingTime() > b.getRemainingTime();
 
     }
 };
 
-struct CompareByArrival {
+struct CompareByArrivalTime {
     bool operator()(const Process& a, const Process& b) {
         if (a.getArrivalTime() == b.getArrivalTime())
         {
