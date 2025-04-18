@@ -29,7 +29,6 @@ A GUI-based desktop application that simulates various CPU scheduling algorithms
 4. **Round Robin**
    - Requires Time Quantum
 
-> 💡 The program only requests relevant input based on the selected algorithm (e.g., FCFS doesn't ask for priority).
 
 ---
 
