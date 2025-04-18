@@ -15,7 +15,7 @@ private:
     int counter = 0; // doesn't make sense
     vector<string> gantt_chart;
 
-    priority_queue<Process, std::vector<Process>, CompareByArrivalTime> MainQueue;
+    priority_queue<Process, std::vector<Process>, DynamicComparator> MainQueue;
 public:
 
     Scheduler(string , bool );

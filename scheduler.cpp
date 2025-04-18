@@ -18,22 +18,12 @@ using namespace std;
 Scheduler::Scheduler(string scheduler_type, bool preemptive) {
     this->scheduler_type = scheduler_type;
     this->preemptive = preemptive;
+  
 
+    // Initialize the class member MainQueue, not a local variable
+    this->MainQueue = priority_queue<Process, std::vector<Process>, DynamicComparator>(
+        DynamicComparator(&this->scheduler_type));
 
-    // re-declaration of MainQueue depending on Scheduler Type
-    if (scheduler_type == "SJF")
-    {
-        // main priority queue is compared by remaining time
-        priority_queue<Process, std::vector<Process>, CompareByRemainingTime> MainQueue;
-    }
-    else if (scheduler_type == "FCFS")
-        // main priority queue is compared by Arrival time
-        priority_queue<Process, std::vector<Process>, CompareByArrivalTime> MainQueue;
-    else if (scheduler_type == "PRIORITY")
-        // main p0riority queue by priority 
-        priority_queue<Process, std::vector<Process>, CompareByPriority> MainQueue;
-    else
-        return;
 }
     
 void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>, CompareByArrivalTime> &PassedArrivalBuffer) {
@@ -47,7 +37,7 @@ void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>,
         // update only if preemptive or no process is executing
         if ((newProcess.getArrivalTime() <= counter) && (!processExecuting || this->preemptive)) {
             // push arrived process
-            this->MainQueue.push(newProcess);
+            MainQueue.push(newProcess);
             // update buffer
             PassedArrivalBuffer.pop();
         }
@@ -61,7 +51,7 @@ void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>,
 
     if (!MainQueue.empty()) {
         // current process from burst time
-        currentProcess = this->MainQueue.top();
+        currentProcess = MainQueue.top();
         this->processExecuting = 1;
     }
     else 
@@ -72,6 +62,10 @@ void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>,
     this_thread::sleep_for(chrono::milliseconds(1000));
 
 
+    // after every second the counter adds 1
+    counter++;
+
+
     if (currentProcess.getRemainingTime()) {
         // update burst time
         currentProcess.updateRemainingTime(1);
@@ -80,12 +74,12 @@ void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>,
         gantt_chart.push_back("P" + to_string(currentProcess.getID()) + " | ");
 
         // pop top element
-        this->MainQueue.pop();
+        MainQueue.pop();
 
 
         // push top element if process not ended
         if (currentProcess.getRemainingTime()) {
-            this->MainQueue.push(currentProcess);
+            MainQueue.push(currentProcess);
         }
         else {
             // process remainingTime=0, process ended
@@ -95,8 +89,6 @@ void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>,
     else
         gantt_chart.push_back("__ | ");
 
-    // after every second the counter adds 1
-    counter++;
 
 
     // Accessing and printing elements
