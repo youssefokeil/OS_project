@@ -2,7 +2,6 @@
 
 #include <mutex>
 #include <thread>
-
 #include <iostream>
 #include <vector>
 #include <map>
@@ -26,8 +25,11 @@ private:
     int finish_time;
     int remaining_time; // for scheduling algorithms with preemption (SJF_RR)
     int priority; // for priority scheduling
+    int rr_id;
+public:
+    int getRrId() const;
 
-
+    void setRrId(int rrId);
 
 public:
 
@@ -35,11 +37,7 @@ public:
 // Constructor
     Process();
 
-// Constructor for FCFS, RR and SJF scheduling
-    Process(int id, int arrival_time, int burst_time);
-
-
-// Constructor for priority scheduling
+// Constructor for all scheduling algorithms, all unused variables equal zero
     Process(int id,int arrival_time,int burst_time,int priority);
 
 // setters
@@ -47,6 +45,7 @@ public:
     void setBurstTime(int burst_time);
     void setStartTime(int start);
     void setRemainingTime(int time);
+
 // Priority scheduling
     void set_priority(int priority);
 
@@ -66,8 +65,6 @@ public:
 // Priority scheduling
     int get_priority() const;
 
-
-
 };
 
 struct Output {
@@ -77,10 +74,3 @@ struct Output {
     vector<string> ganttChart;
 
 };
-
-/*
-bool sortByArrivalTime(const Process &a, const Process &b);
-
-bool sortByPriority(const Process &a, const Process &b);
-
-void printOutput(const Output& output, const string& title);*/

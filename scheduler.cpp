@@ -1,18 +1,25 @@
-#include <iostream>
-#include <vector>
-#include <map>
-#include <numeric>
-#include <algorithm>
-#include <chrono>
-#include <thread>
-#include <queue>
-#include <string>
-
 #include "process_class.h"
 #include "CompareStructs.h"
 #include "Scheduler.h"
 
 using namespace std;
+
+
+double Scheduler::getAvgTurnAround() const {
+    return avgTurnAround;
+}
+
+void Scheduler::setAvgTurnAround(double avgTurnAround) {
+    Scheduler::avgTurnAround = avgTurnAround;
+}
+
+double Scheduler::getAvgWaitingTime() const {
+    return avgWaitingTime;
+}
+
+void Scheduler::setAvgWaitingTime(double avgWaitingTime) {
+    Scheduler::avgWaitingTime = avgWaitingTime;
+}
 
 // Set Scheduler Type and whether it is preemptive
 Scheduler::Scheduler(string scheduler_type, bool preemptive) {
@@ -25,7 +32,8 @@ Scheduler::Scheduler(string scheduler_type, bool preemptive) {
 
 }
 
-void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>, CompareByArrivalTime> &PassedArrivalBuffer) {
+
+void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>, CompareByArrivalTime> &PassedArrivalBuffer,int q) {
 
 
     while (!PassedArrivalBuffer.empty()) {
@@ -47,31 +55,34 @@ void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>,
 
     auto start = chrono::high_resolution_clock::now();
 
-    cout << "\ncounter : " << counter << endl;
 
     if (!MainQueue.empty()) {
         // current process from burst time
         currentProcess = MainQueue.top();
-        this->processExecuting = 1;
+        this->processExecuting = true;
     }
     else
-        currentProcess = Process(0, 0, 0);
+        currentProcess = Process(0, 0, 0,0);
 
-
-
-    this_thread::sleep_for(chrono::milliseconds(1000));
-
-
-    // after every second the counter adds 1
-    counter++;
-
+    int min_time=min(q,currentProcess.getRemainingTime());
 
     if (currentProcess.getRemainingTime()) {
         // update burst time
-        currentProcess.updateRemainingTime(1);
+        currentProcess.updateRemainingTime(min_time);
 
         // print current element
-        gantt_chart.push_back("P" + to_string(currentProcess.getID()) + " | ");
+        while(min_time--) {
+            //printing for a quantum/once if not round-robin
+            this_thread::sleep_for(chrono::milliseconds(1000));
+            counter++;
+            cout << "\ncounter : " << counter << endl;
+            gantt_chart.push_back("P" + to_string(currentProcess.getID()) + " | ");
+            for (const string& str : gantt_chart)
+                cout << str;
+        }
+
+        // after a process finishes a quantum its rr_id is set to current time
+        currentProcess.setRrId(counter);
 
         // pop top element
         MainQueue.pop();
@@ -83,98 +94,24 @@ void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>,
         }
         else {
             // process remainingTime=0, process ended
-            this->processExecuting = 0;
+            currentProcess.setFinishTime(counter);
+            avgTurnAround+=currentProcess.calc_turnaround_time();
+            avgWaitingTime+=currentProcess.calc_waiting_time();
+            this->processExecuting = false;
         }
     }
-    else
+    else {
+        // printing in case of idle
+        this_thread::sleep_for(chrono::milliseconds(1000));
+        counter++;
+        cout << "\ncounter : " << counter << endl;
         gantt_chart.push_back("__ | ");
+        for (const string& str : gantt_chart)
+            cout << str;
+    }
 
-
-
-    // Accessing and printing elements
-    for (const string& str : gantt_chart)
-        cout << str;
 }
 
 
-
-
-
-
-
-
-
-
-
-int Scheduler::roundRobin(priority_queue<Process, std::vector<Process>, CompareByArrivalTime> &PassedArrivalBuffer,int quantum) {
-
-int flag=0;
-
-    while (!PassedArrivalBuffer.empty()) {
-
-        // top of arrived processes
-        newProcess = PassedArrivalBuffer.top();
-
-        // update only if preemptive or no process is executing
-        if ((newProcess.getArrivalTime() <= counter) ) {
-            // push arrived process
-            RRQueue.push(newProcess);
-            // update buffer
-            PassedArrivalBuffer.pop();
-        }
-        else
-            break;
-    }
-
-
-    auto start = chrono::high_resolution_clock::now();
-
-    cout << "\ncounter : " << counter << endl;
-
-    if (RRQueue.empty())RRQueue.front()= Process(0, 0, 0);
-
-
-
-    this_thread::sleep_for(chrono::milliseconds(1000));
-
-
-    // after every second the counter adds 1
-    counter++;
-
-
-    if ( RRQueue.front().getRemainingTime()) {
-
-        // update burst time
-        RRQueue.front().updateRemainingTime(1);
-
-        // print current element
-        gantt_chart.push_back("P" + to_string(RRQueue.front().getID()) + " | ");
-
-
-        if(!RRQueue.empty()   &&   RRQueue.front().getRemainingTime()  &&   quantum==0) {
-            // push top element if process not ended
-            // pop top element
-             RRQueue.push(RRQueue.front());
-             RRQueue.pop();
-
-         }else if(RRQueue.front().getRemainingTime() ==0) {
-            // pop top element
-            RRQueue.pop();
-            flag=1;
-        }
-
-
-    }
-    else
-        gantt_chart.push_back("__ | ");
-
-
-
-    // Accessing and printing elements
-    for (const string& str : gantt_chart)
-        cout << str;
-
-    return flag;
-}
 
 

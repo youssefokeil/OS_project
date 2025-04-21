@@ -13,15 +13,49 @@ private:
     // process executing flag default is false, default is preemptive
     bool processExecuting = false, preemptive = true;
     int counter = 0; // doesn't make sense
+
+
+    double avgTurnAround=0,avgWaitingTime=0;
     vector<string> gantt_chart;
 
     priority_queue<Process, std::vector<Process>, DynamicComparator> MainQueue;
     queue<Process>RRQueue;
 public:
+    double getAvgTurnAround() const;
+
+    void setAvgTurnAround(double avgTurnAround);
+
+    double getAvgWaitingTime() const;
+
+    void setAvgWaitingTime(double avgWaitingTime);
 
     Scheduler(string, bool);
-    void run_scheduler_once(priority_queue<Process, std::vector<Process>, CompareByArrivalTime> &);
 
-
-    int roundRobin(priority_queue<Process, std::vector<Process>, CompareByArrivalTime> &PassedArrivalBuffer, int quantum);
+    void run_scheduler_once(priority_queue<Process, std::vector<Process>, CompareByArrivalTime> &PassedArrivalBuffer, int q);
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -2,6 +2,24 @@
 
 #include "process_class.h"
 
+
+struct CompareByArrivalTime {
+    bool operator()(const Process& a, const Process& b) {
+        if (a.getArrivalTime() == b.getArrivalTime())
+        {
+            if (a.getRemainingTime() == b.getRemainingTime())
+                return a.getID() > b.getID();
+
+            return a.getRemainingTime() > b.getRemainingTime();
+
+        }
+        return a.getArrivalTime() > b.getArrivalTime();
+
+    }
+};
+
+/*
+ //unused comparators, dynamic comparator replaced them
 struct CompareByBurstTime {
     bool operator()(const Process& a, const Process& b) {
         if (a.getBurstTime() == b.getBurstTime())
@@ -28,28 +46,13 @@ struct CompareByRemainingTime {
     }
 };
 
-struct CompareByArrivalTime {
-    bool operator()(const Process& a, const Process& b) {
-        if (a.getArrivalTime() == b.getArrivalTime())
-        {
-            if (a.getRemainingTime() == b.getRemainingTime())
-                return a.getID() > b.getID();
-
-            return a.getRemainingTime() > b.getRemainingTime();
-
-        }
-        return a.getArrivalTime() > b.getArrivalTime();
-
-    }
-};
-
 struct CompareByPriority {
     bool operator()(const Process& a, const Process& b) {
         return a.get_priority() > b.get_priority();
 
     }
 };
-
+*/
 struct DynamicComparator {
     const string* scheduler_type_ptr;
 
@@ -67,6 +70,8 @@ struct DynamicComparator {
         }
 
         const string& scheduler_type = *scheduler_type_ptr;
+
+        // shortest job first
         if (scheduler_type == "SJF") {
             if (a.getRemainingTime() != b.getRemainingTime())
                 return a.getRemainingTime() > b.getRemainingTime();
@@ -87,6 +92,18 @@ struct DynamicComparator {
             if (a.getArrivalTime() != b.getArrivalTime())
                 return a.getArrivalTime() > b.getArrivalTime();
             return a.getID() > b.getID();
+
+            // round-robin
+        }else if(scheduler_type=="ROUND-ROBIN"){
+            if (a.getRrId() != b.getRrId())
+                return a.getRrId() > b.getRrId();
+            if(a.getRrId()==b.getRrId()){
+                if(a.getBurstTime()-a.getRemainingTime() == b.getBurstTime()-b.getRemainingTime())
+                    return a.getID() > b.getID();
+                return a.getBurstTime()-a.getRemainingTime() > b.getBurstTime()-b.getRemainingTime();
+            }
+            return a.getID() > b.getID();
+
         }
 
         // default case
