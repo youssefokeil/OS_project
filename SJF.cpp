@@ -40,11 +40,13 @@ int main(){
     }
 
     // SJF preemptive
-    Scheduler SJF_scheduler = Scheduler(s, true);
-
+    Scheduler SJF_scheduler = Scheduler(s, false);
+int q=quantum;
     // the main while loop should be changed to take flag stop or stth from GUI
     for (int i = 0;i < 30;i++) {
-        SJF_scheduler.run_scheduler_once(ArrivalBuffer,quantum);
+        SJF_scheduler.run_scheduler_once(ArrivalBuffer,q);
+        q--;
+        if(q==0)q=quantum;
     }
     cout<<"\navgTurnAround "<<SJF_scheduler.getAvgTurnAround()/n<<endl;
     cout<<"avgWaitingTime "<<SJF_scheduler.getAvgWaitingTime()/n<<endl;
