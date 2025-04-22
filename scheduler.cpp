@@ -33,7 +33,7 @@ Scheduler::Scheduler(string scheduler_type, bool preemptive) {
 }
 
 
-void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>, CompareByArrivalTime> &PassedArrivalBuffer,int q) {
+void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>, CompareByArrivalTime> &PassedArrivalBuffer,int &q) {
 
 
     while (!PassedArrivalBuffer.empty()) {
@@ -47,6 +47,7 @@ void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>,
             MainQueue.push(newProcess);
             // update buffer
             PassedArrivalBuffer.pop();
+            processExecuting=1;
         }
         else
             break;
@@ -55,38 +56,43 @@ void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>,
 
     auto start = chrono::high_resolution_clock::now();
 
+    cout << "\ncounter : " << counter << endl;
 
     if (!MainQueue.empty()) {
         // current process from burst time
         currentProcess = MainQueue.top();
         this->processExecuting = true;
-    }
-    else
+    }else
         currentProcess = Process(0, 0, 0,0);
+    this_thread::sleep_for(chrono::milliseconds(1000));
+    counter++;
 
     int min_time=min(q,currentProcess.getRemainingTime());
 
     if (currentProcess.getRemainingTime()) {
         // update burst time
-        currentProcess.updateRemainingTime(min_time);
+        currentProcess.updateRemainingTime(1);
 
         // print current element
-        while(min_time--) {
+
             //printing for a quantum/once if not round-robin
-            this_thread::sleep_for(chrono::milliseconds(1000));
-            counter++;
-            cout << "\ncounter : " << counter << endl;
+
             gantt_chart.push_back("P" + to_string(currentProcess.getID()) + " | ");
-            for (const string& str : gantt_chart)
-                cout << str;
-        }
+
+
 
         // after a process finishes a quantum its rr_id is set to current time
-        currentProcess.setRrId(counter);
+       //if(!processExecuting) currentProcess.setRrId(counter);
 
         // pop top element
         MainQueue.pop();
-
+        if(currentProcess.getRemainingTime()<q){
+            q=currentProcess.getRemainingTime()+1;
+        }
+        if(q==1){
+            currentProcess.setRrId(counter);
+            processExecuting=false;
+        }else processExecuting=true;
 
         // push top element if process not ended
         if (currentProcess.getRemainingTime()) {
@@ -100,16 +106,12 @@ void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>,
             this->processExecuting = false;
         }
     }
-    else {
-        // printing in case of idle
-        this_thread::sleep_for(chrono::milliseconds(1000));
-        counter++;
-        cout << "\ncounter : " << counter << endl;
+    else { q=1;
         gantt_chart.push_back("__ | ");
-        for (const string& str : gantt_chart)
-            cout << str;
-    }
 
+    }
+    for (const string& str : gantt_chart)
+        cout << str;
 }
 
 
