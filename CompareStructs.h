@@ -2,31 +2,6 @@
 
 #include "process_class.h"
 
-struct CompareByBurstTime {
-    bool operator()(const Process& a, const Process& b) {
-        if (a.getBurstTime() == b.getBurstTime())
-        {
-            if (a.getArrivalTime() == b.getArrivalTime())
-                return a.getID() > b.getID();
-
-            return a.getArrivalTime() > b.getArrivalTime();
-
-        }
-        return a.getBurstTime() > b.getBurstTime();
-
-    }
-};
-struct CompareByRemainingTime {
-    bool operator()(const Process& a, const Process& b) {
-        if (a.getRemainingTime() != b.getRemainingTime())
-            return a.getRemainingTime() > b.getRemainingTime();
-        if (a.getArrivalTime() != b.getArrivalTime())
-            return a.getArrivalTime() > b.getArrivalTime();
-        return a.getID() > b.getID();        
-
-
-    }
-};
 
 struct CompareByArrivalTime {
     bool operator()(const Process& a, const Process& b) {
@@ -43,12 +18,7 @@ struct CompareByArrivalTime {
     }
 };
 
-struct CompareByPriority {
-    bool operator()(const Process& a, const Process& b) {
-        return a.get_priority() > b.get_priority();
 
-    }
-};
 
 struct DynamicComparator {
     const string* scheduler_type_ptr;
@@ -87,6 +57,19 @@ struct DynamicComparator {
             if (a.getArrivalTime() != b.getArrivalTime())
                 return a.getArrivalTime() > b.getArrivalTime();
             return a.getID() > b.getID();
+        }
+         // round-robin
+        else if(scheduler_type=="ROUNDROBIN")
+        {
+            if (a.getRrId() != b.getRrId())
+                return a.getRrId() > b.getRrId();
+            if(a.getRrId()==b.getRrId()){
+                if(a.getBurstTime()-a.getRemainingTime() == b.getBurstTime()-b.getRemainingTime())
+                    return a.getID() > b.getID();
+                return a.getBurstTime()-a.getRemainingTime() > b.getBurstTime()-b.getRemainingTime();
+            }
+            return a.getID() > b.getID();
+
         }
 
         // default case
