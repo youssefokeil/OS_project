@@ -1,10 +1,4 @@
-#include <iostream>
 #include <vector>
-#include <map>
-#include <numeric>
-#include <algorithm>
-#include <chrono>
-#include <thread>
 #include <queue>
 #include <string>
 
@@ -12,7 +6,43 @@
 #include "CompareStructs.h"
 #include "Scheduler.h"
 
+
+
 using namespace std;
+vector<string>& Scheduler::getGanttChart()  {
+    return gantt_chart;
+}
+ std::priority_queue<Process, std::vector<Process>, DynamicComparator>& Scheduler::getMainQueue() {
+     return MainQueue;
+ }
+
+
+ double Scheduler::getAvgTurnAround() const {
+     return avgTurnAround;
+ }
+
+ void Scheduler::setAvgTurnAround(double avgTurnAround) {
+     Scheduler::avgTurnAround = avgTurnAround;
+ }
+
+ double Scheduler::getAvgWaitingTime() const {
+     return avgWaitingTime;
+ }
+
+ void Scheduler::setAvgWaitingTime(double avgWaitingTime) {
+     Scheduler::avgWaitingTime = avgWaitingTime;
+ }
+ void Scheduler::setScheduler_type(string scheduler_type) {
+     Scheduler::scheduler_type = scheduler_type;
+ }
+ void Scheduler::setPreemptive(bool preemptive){
+     Scheduler::preemptive = preemptive;
+
+ }  
+int Scheduler::getcounter(){
+    return counter;
+};
+
 
 // Set Scheduler Type and whether it is preemptive
 Scheduler::Scheduler(string scheduler_type, bool preemptive) {
@@ -25,8 +55,9 @@ Scheduler::Scheduler(string scheduler_type, bool preemptive) {
         DynamicComparator(&this->scheduler_type));
 
 }
+
     
-void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>, CompareByArrivalTime> &PassedArrivalBuffer) {
+void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>, CompareByArrivalTime> &PassedArrivalBuffer,int &q) {
 
 
     while (!PassedArrivalBuffer.empty()) {
@@ -39,7 +70,9 @@ void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>,
             // push arrived process
             MainQueue.push(newProcess);
             // update buffer
+           if(scheduler_type=="ROUNDROBIN")processExecuting=true;
             PassedArrivalBuffer.pop();
+
         }
         else
             break;
@@ -55,7 +88,7 @@ void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>,
         this->processExecuting = 1;
     }
     else 
-        currentProcess = Process(0, 0, 0);
+        currentProcess = Process(0, 0, 0,0);
    
 
 
@@ -75,6 +108,14 @@ void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>,
 
         // pop top element
         MainQueue.pop();
+        
+        if(currentProcess.getRemainingTime()<q){
+            q=currentProcess.getRemainingTime()+1;
+        }
+        if(q==1){
+            currentProcess.setRrId(counter);
+            processExecuting=false;
+        }else processExecuting=true;
 
 
         // push top element if process not ended
@@ -83,12 +124,16 @@ void Scheduler::run_scheduler_once(priority_queue<Process, std::vector<Process>,
         }
         else {
             // process remainingTime=0, process ended
-            this->processExecuting = 0;
+            currentProcess.setFinishTime(counter);
+            avgTurnAround+=currentProcess.calc_turnaround_time();
+            avgWaitingTime+=currentProcess.calc_waiting_time();
+            this->processExecuting = false;
         }
     }
-    else
+    else{
+        q=1;  
         gantt_chart.push_back("__ | ");
-
+    }
 
 
     // Accessing and printing elements
