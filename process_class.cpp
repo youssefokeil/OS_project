@@ -11,21 +11,22 @@ Process::Process() {
     start_time = -1;
     remaining_time = 0;
     priority = 0;
+    
 }
 
-// Constructor for FCFS, RR, and SJF scheduling
-Process::Process(int id, int arrival_time, int burst_time)
-    : id(id), arrival_time(arrival_time), burst_time(burst_time), remaining_time(burst_time) {
+// Constructor for all scheduling algorithms, all unused variables equal zero
+Process::Process(int id, int arrival_time, int burst_time, int priority){
+
     waiting_time = 0;
     turnaround_time = 0;
     finish_time = 0;
     start_time = -1;
-}
-
-// Constructor for Priority Scheduling
-Process::Process(int id, int arrival_time, int burst_time, int priority)
-    : Process(id, arrival_time, burst_time) {
+    this->id=id;
+    this->arrival_time=arrival_time;
+    this->burst_time=burst_time;
+    remaining_time=burst_time;
     this->priority = priority;
+    rr_id=arrival_time;
 }
 
 // Setters
@@ -49,20 +50,10 @@ void Process::set_priority(int priority) {
     this->priority = priority;
 }
 
-// Calculations
-int Process::calc_waiting_time() {
-    waiting_time = turnaround_time - burst_time;
-    return waiting_time;
+void Process::setRrId(int rrId) {
+    rr_id = rrId;
 }
 
-int Process::calc_turnaround_time() {
-    turnaround_time = finish_time - arrival_time;
-    return turnaround_time;
-}
-
-void Process::updateRemainingTime(int timeUsed) {
-    remaining_time -= timeUsed;
-}
 
 // Getters
 int Process::get_priority() const {
@@ -95,4 +86,23 @@ int Process::getID() const {
 
 int Process::getRemainingTime() const {
     return remaining_time;
+}
+
+int Process::getRrId() const {
+    return rr_id;
+}
+
+// Calculations
+int Process::calc_waiting_time() {
+    waiting_time = turnaround_time - burst_time;
+    return waiting_time;
+}
+
+int Process::calc_turnaround_time() {
+    turnaround_time = finish_time - arrival_time;
+    return turnaround_time;
+}
+
+void Process::updateRemainingTime(int timeUsed) {
+    remaining_time -= timeUsed;
 }
